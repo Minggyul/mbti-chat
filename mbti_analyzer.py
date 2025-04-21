@@ -1,0 +1,392 @@
+import os
+import json
+import logging
+from openai import OpenAI
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+class MBTIAnalyzer:
+    def __init__(self):
+        """Initialize the MBTI analyzer with OpenAI client."""
+        # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
+        # do not change this unless explicitly requested by the user
+        self.model = "gpt-4o"
+        self.openai_api_key = os.environ.get("OPENAI_API_KEY")
+        self.client = OpenAI(api_key=self.openai_api_key)
+        self.confidence_threshold = 0.7  # Threshold to determine when assessment is complete
+
+    def process_message(self, user_message, conversation, assessment_state, assessment_complete):
+        """
+        Process user message and update MBTI assessment state.
+        
+        Args:
+            user_message (str): The user's message
+            conversation (list): Conversation history
+            assessment_state (dict): Current MBTI assessment scores and confidence
+            assessment_complete (bool): Whether assessment is complete
+            
+        Returns:
+            tuple: (AI response, updated assessment state, assessment complete flag)
+        """
+        try:
+            # If assessment is already complete, just have a normal conversation
+            if assessment_complete:
+                response = self._generate_response(user_message, conversation, assessment_state, True)
+                return response, assessment_state, assessment_complete
+            
+            # Analyze the message for MBTI traits and get updated assessment
+            updated_assessment = self._analyze_mbti_traits(user_message, conversation, assessment_state)
+            
+            # Check if assessment is complete based on confidence levels
+            is_complete = self._check_assessment_complete(updated_assessment)
+            
+            # Generate appropriate response based on assessment state
+            response = self._generate_response(user_message, conversation, updated_assessment, is_complete)
+            
+            return response, updated_assessment, is_complete
+            
+        except Exception as e:
+            logger.error(f"Error processing message: {str(e)}")
+            return "I'm having trouble processing your message. Could you try again?", assessment_state, assessment_complete
+
+    def _analyze_mbti_traits(self, user_message, conversation, current_assessment):
+        """
+        Analyze user message to update MBTI trait scores and confidence.
+        
+        Args:
+            user_message (str): The user's message
+            conversation (list): Conversation history
+            current_assessment (dict): Current MBTI assessment state
+            
+        Returns:
+            dict: Updated assessment state
+        """
+        # Prepare conversation context for analysis
+        context = []
+        for message in conversation[-5:]:  # Use last 5 messages for context
+            context.append({"role": message["role"], "content": message["content"]})
+        
+        # Define the analysis prompt
+        system_prompt = """
+        You are an expert MBTI personality analyst. Your task is to analyze the user's messages to determine
+        their MBTI type based on the following dimensions:
+        
+        E vs I: Extraversion vs Introversion - how the person gets their energy and interacts with others
+        S vs N: Sensing vs Intuition - how the person processes information
+        T vs F: Thinking vs Feeling - how the person makes decisions
+        J vs P: Judging vs Perceiving - how the person approaches structure and planning
+        
+        Based on the user's message, analyze each dimension and provide:
+        1. A score from -1.0 to 1.0 where:
+           - For E/I: -1.0 means strongly Introverted, 1.0 means strongly Extraverted
+           - For S/N: -1.0 means strongly Sensing, 1.0 means strongly Intuitive
+           - For T/F: -1.0 means strongly Thinking, 1.0 means strongly Feeling
+           - For J/P: -1.0 means strongly Judging, 1.0 means strongly Perceiving
+        
+        2. A confidence value from 0.0 to 1.0 indicating how certain you are about this assessment
+        
+        Respond with JSON only in this exact format:
+        {
+            "E_I": {"score": float, "confidence": float, "reasoning": "brief explanation"},
+            "S_N": {"score": float, "confidence": float, "reasoning": "brief explanation"},
+            "T_F": {"score": float, "confidence": float, "reasoning": "brief explanation"},
+            "J_P": {"score": float, "confidence": float, "reasoning": "brief explanation"}
+        }
+        """
+        
+        try:
+            # Call OpenAI API to analyze the message
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *context,
+                    {"role": "user", "content": f"Analyze this message: {user_message}"}
+                ],
+                response_format={"type": "json_object"}
+            )
+            
+            # Parse the response
+            analysis = json.loads(response.choices[0].message.content)
+            
+            # Update assessment state with weighted average of current and new analysis
+            updated_assessment = current_assessment.copy()
+            
+            for dimension in ['E_I', 'S_N', 'T_F', 'J_P']:
+                current = current_assessment[dimension]
+                new = analysis[dimension]
+                
+                # Skip if confidence is very low in new analysis
+                if new['confidence'] < 0.2:
+                    continue
+                
+                # Calculate weighted average based on confidence
+                if current['confidence'] == 0:
+                    # First assessment for this dimension
+                    updated_assessment[dimension] = {
+                        'score': new['score'],
+                        'confidence': new['confidence']
+                    }
+                else:
+                    # Combine with existing assessment
+                    total_confidence = current['confidence'] + new['confidence']
+                    weighted_score = (
+                        (current['score'] * current['confidence']) + 
+                        (new['score'] * new['confidence'])
+                    ) / total_confidence
+                    
+                    # Increase confidence, but don't exceed 1.0
+                    new_confidence = min(total_confidence * 0.8, 1.0)
+                    
+                    updated_assessment[dimension] = {
+                        'score': weighted_score,
+                        'confidence': new_confidence
+                    }
+            
+            return updated_assessment
+            
+        except Exception as e:
+            logger.error(f"Error analyzing MBTI traits: {str(e)}")
+            # Return original assessment if analysis fails
+            return current_assessment
+
+    def _check_assessment_complete(self, assessment):
+        """
+        Check if MBTI assessment is complete based on confidence thresholds.
+        
+        Args:
+            assessment (dict): Current MBTI assessment state
+            
+        Returns:
+            bool: True if assessment is complete, False otherwise
+        """
+        # Check if all dimensions have confidence above threshold
+        for dimension, values in assessment.items():
+            if values['confidence'] < self.confidence_threshold:
+                return False
+        
+        return True
+
+    def _generate_response(self, user_message, conversation, assessment, is_complete):
+        """
+        Generate appropriate response based on assessment state.
+        
+        Args:
+            user_message (str): The user's message
+            conversation (list): Conversation history
+            assessment (dict): Current MBTI assessment state
+            is_complete (bool): Whether assessment is complete
+            
+        Returns:
+            str: AI response
+        """
+        # Prepare conversation context
+        context = []
+        for message in conversation[-5:]:  # Use last 5 messages for context
+            context.append({"role": message["role"], "content": message["content"]})
+        
+        # Define the system prompt based on assessment state
+        if is_complete:
+            mbti_type = self.calculate_mbti_type(assessment)
+            system_prompt = f"""
+            You are a friendly personality assessment chatbot. The user's MBTI assessment is now complete, 
+            and they appear to be a {mbti_type} personality type.
+            
+            Continue the conversation naturally. If they ask about their personality type, you can share their
+            result ({mbti_type}) and explain what that means. Otherwise, engage in casual friendly conversation
+            that might further confirm their type.
+            
+            Be warm, personable, and avoid any stilted or clinical tone. Talk like a supportive friend.
+            """
+        else:
+            # Calculate dimensions that need more assessment
+            low_confidence_dimensions = []
+            for dimension, values in assessment.items():
+                if values['confidence'] < self.confidence_threshold:
+                    low_confidence_dimensions.append(dimension)
+            
+            system_prompt = f"""
+            You are a friendly personality assessment chatbot having a natural conversation to determine 
+            the user's MBTI personality type. Your goal is to ask questions and engage in dialogue that helps
+            reveal their personality traits.
+            
+            Current assessment state:
+            E/I: Score {assessment['E_I']['score']:.2f}, Confidence {assessment['E_I']['confidence']:.2f}
+            S/N: Score {assessment['S_N']['score']:.2f}, Confidence {assessment['S_N']['confidence']:.2f}
+            T/F: Score {assessment['T_F']['score']:.2f}, Confidence {assessment['T_F']['confidence']:.2f}
+            J/P: Score {assessment['J_P']['score']:.2f}, Confidence {assessment['J_P']['confidence']:.2f}
+            
+            Dimensions that need more assessment: {", ".join(low_confidence_dimensions)}
+            
+            Guidelines:
+            1. Maintain a casual, friendly conversation - don't make it obvious you're assessing them
+            2. Ask open-ended questions that might reveal personality traits, especially for dimensions with low confidence
+            3. Avoid directly asking about MBTI or explaining that you're assessing them
+            4. If they ask what you're doing, be honest but gentle about the personality assessment
+            5. Keep responses conversational and not overly long
+            6. Respond to the user's message directly, then guide the conversation with a question
+            
+            Keep the conversation flowing naturally as if you're just chatting with a friend.
+            """
+        
+        try:
+            # Call OpenAI API to generate response
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *context
+                ]
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating response: {str(e)}")
+            return "I'm having trouble generating a response. Let's continue our conversation. How are you feeling today?"
+
+    def calculate_mbti_type(self, assessment):
+        """
+        Calculate the MBTI type based on assessment scores.
+        
+        Args:
+            assessment (dict): MBTI assessment state
+            
+        Returns:
+            str: MBTI type (e.g., "INTJ")
+        """
+        mbti_type = ""
+        
+        # E vs I
+        mbti_type += "E" if assessment['E_I']['score'] > 0 else "I"
+        
+        # S vs N
+        mbti_type += "S" if assessment['S_N']['score'] < 0 else "N"
+        
+        # T vs F
+        mbti_type += "T" if assessment['T_F']['score'] < 0 else "F"
+        
+        # J vs P
+        mbti_type += "J" if assessment['J_P']['score'] < 0 else "P"
+        
+        return mbti_type
+
+    def get_mbti_description(self, mbti_type):
+        """
+        Get description for MBTI type.
+        
+        Args:
+            mbti_type (str): MBTI type (e.g., "INTJ")
+            
+        Returns:
+            dict: Description and details for the MBTI type
+        """
+        # Define descriptions for each MBTI type
+        descriptions = {
+            "INTJ": {
+                "title": "The Architect",
+                "description": "INTJs are strategic, innovative thinkers with a talent for logical analysis and long-term planning. They're driven by their own original ideas and often work best independently.",
+                "strengths": "Strategic thinking, independence, rational analysis, determination",
+                "weaknesses": "Can be overly critical, dismissive of emotions, perfectionistic"
+            },
+            "INTP": {
+                "title": "The Logician",
+                "description": "INTPs are innovative inventors with an unquenchable thirst for knowledge. They love theoretical and abstract concepts and excel at finding logical inconsistencies.",
+                "strengths": "Analytical thinking, creativity, objectivity, openness to new ideas",
+                "weaknesses": "Can be absent-minded, insensitive, perfectionist, or socially detached"
+            },
+            "ENTJ": {
+                "title": "The Commander",
+                "description": "ENTJs are bold, imaginative leaders who have a knack for finding intelligent solutions to difficult problems. They're strategic planners who often take charge naturally.",
+                "strengths": "Efficient, energetic, self-confident, strong-willed, strategic",
+                "weaknesses": "Can be impatient, stubborn, arrogant, or insensitive to others' feelings"
+            },
+            "ENTP": {
+                "title": "The Debater",
+                "description": "ENTPs are smart, curious thinkers who enjoy intellectual challenges and can't resist a good debate. They're creative problem solvers who see connections others might miss.",
+                "strengths": "Knowledgeable, creative, excellent brainstorming, energetic",
+                "weaknesses": "May argue for fun, dislike practical matters, procrastinate"
+            },
+            "INFJ": {
+                "title": "The Advocate",
+                "description": "INFJs are insightful, creative idealists motivated by deep convictions and a desire to help others. They seek meaning in relationships and work to understand others' perspectives.",
+                "strengths": "Creative, insightful, principled, passionate, altruistic",
+                "weaknesses": "Can be sensitive to criticism, perfectionistic, private, or burn out easily"
+            },
+            "INFP": {
+                "title": "The Mediator",
+                "description": "INFPs are imaginative idealists guided by their core values and beliefs. They're curious, creative, and adaptable, with a strong desire to live a life that aligns with their values.",
+                "strengths": "Empathetic, creative, passionate, idealistic, dedicated to values",
+                "weaknesses": "May be unrealistic, overly idealistic, too self-critical, or impractical"
+            },
+            "ENFJ": {
+                "title": "The Protagonist",
+                "description": "ENFJs are charismatic leaders who naturally understand and connect with others. They're often focused on helping others develop and fulfill their potential.",
+                "strengths": "Warm, empathetic, reliable, natural leaders, compelling communicators",
+                "weaknesses": "Can be too selfless, overly idealistic, too sensitive to criticism"
+            },
+            "ENFP": {
+                "title": "The Campaigner",
+                "description": "ENFPs are enthusiastic, creative free spirits who find potential and possibility everywhere. They're excellent at connecting with others and bringing energy to situations.",
+                "strengths": "Enthusiastic, creative, people-oriented, energetic, empathetic",
+                "weaknesses": "Can be overly emotional, disorganized, overthink, or struggle with follow-through"
+            },
+            "ISTJ": {
+                "title": "The Logistician",
+                "description": "ISTJs are practical, fact-minded individuals with an unwavering respect for facts and a dedication to reliability. They value traditions and loyalty.",
+                "strengths": "Honest, direct, dependable, organized, practical and responsible",
+                "weaknesses": "May be stubborn, insensitive, or resistant to change and new ideas"
+            },
+            "ISFJ": {
+                "title": "The Defender",
+                "description": "ISFJs are protective, devoted individuals who enjoy contributing to established structures and traditions. They're practical helpers with excellent attention to detail.",
+                "strengths": "Supportive, reliable, observant, enthusiastic, loyal, detail-oriented",
+                "weaknesses": "Can be overworked, reluctant to change, overly humble, take criticism personally"
+            },
+            "ESTJ": {
+                "title": "The Executive",
+                "description": "ESTJs are excellent administrators who like to take charge and manage people and situations. They value order, structure, and clear communication.",
+                "strengths": "Dedicated, strong-willed, practical, direct, honest, loyal",
+                "weaknesses": "May be inflexible, judgmental, too focused on social status, not good with emotions"
+            },
+            "ESFJ": {
+                "title": "The Consul",
+                "description": "ESFJs are caring, social, and popular people who value harmony and cooperation. They're attentive to others' needs and often serve as the glue in their communities.",
+                "strengths": "Strong people skills, reliable, practical, sensitive to others, loyal",
+                "weaknesses": "Can be vulnerable to criticism, inflexible, needy for approval"
+            },
+            "ISTP": {
+                "title": "The Virtuoso",
+                "description": "ISTPs are daring experimenters with an aptitude for understanding how mechanical things work. They're practical problem solvers who enjoy hands-on activities.",
+                "strengths": "Optimistic, creative, practical, spontaneous, rational in crisis",
+                "weaknesses": "Can be private, insensitive, easily bored, risk-prone"
+            },
+            "ISFP": {
+                "title": "The Adventurer",
+                "description": "ISFPs are artistic, sensitive explorers who value personal freedom and expression. They enjoy new experiences and have a strong aesthetic sense.",
+                "strengths": "Charming, sensitive to others, creative, passionate, artistic",
+                "weaknesses": "May be unpredictable, too independent, easily stressed, or conflict-avoidant"
+            },
+            "ESTP": {
+                "title": "The Entrepreneur",
+                "description": "ESTPs are energetic thrill-seekers who enjoy acting on immediate, practical solutions. They're adaptable, observant, and enjoy living in the moment.",
+                "strengths": "Bold, resourceful, rational, practical, observant, excellent in crisis",
+                "weaknesses": "Can be impatient, risk-prone, unstructured, or defiant of rules"
+            },
+            "ESFP": {
+                "title": "The Entertainer",
+                "description": "ESFPs are vibrant, enthusiastic people who enjoy being in the spotlight and bringing joy to others. They're spontaneous, energetic, and enjoy living in the moment.",
+                "strengths": "Bold, original, aesthetic, practical, observant, excellent people skills",
+                "weaknesses": "May be sensitive to criticism, unfocused, or have difficulty with planning"
+            }
+        }
+        
+        # Return description for the given MBTI type
+        return descriptions.get(mbti_type, {
+            "title": "Personality Type",
+            "description": "Each personality type has its own unique strengths and areas for growth.",
+            "strengths": "Each type has different strengths",
+            "weaknesses": "Each type has different challenges"
+        })
