@@ -27,6 +27,8 @@ def index():
         'J_P': {'score': 0, 'confidence': 0}
     }
     session['assessment_complete'] = False
+    session['message_count'] = 0  # Track number of user messages
+    session['min_messages_needed'] = 10  # Minimum messages for good assessment
     
     return render_template('index.html')
 
@@ -51,6 +53,10 @@ def chat():
         # Add user message to conversation history
         conversation.append({"role": "user", "content": user_message})
         
+        # Update message count
+        message_count = session.get('message_count', 0) + 1
+        session['message_count'] = message_count
+        
         # Process message through MBTI analyzer
         response, updated_assessment_state, assessment_complete = mbti_analyzer.process_message(
             user_message, 
@@ -68,10 +74,14 @@ def chat():
         session['assessment_complete'] = assessment_complete
         
         # Prepare response
+        min_messages = session.get('min_messages_needed', 10)
         result = {
             "response": response,
             "assessment_state": updated_assessment_state,
-            "assessment_complete": assessment_complete
+            "assessment_complete": assessment_complete,
+            "message_count": message_count,
+            "min_messages_needed": min_messages,
+            "progress_percentage": min(100, int(message_count / min_messages * 100))
         }
         
         if assessment_complete:
@@ -124,6 +134,7 @@ def reset():
         'J_P': {'score': 0, 'confidence': 0}
     }
     session['assessment_complete'] = False
+    session['message_count'] = 0  # Reset message counter
     
     return jsonify({"status": "success", "message": "Conversation reset"})
 

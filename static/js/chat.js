@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('resetBtn');
     const assessmentStatus = document.getElementById('assessmentStatus');
     const resultsSection = document.getElementById('resultsSection');
+    const messageCounter = document.getElementById('messageCounter');
+    const messageProgress = document.getElementById('messageProgress');
     
     // Progress bar elements
     const eiProgress = document.getElementById('eiProgress');
@@ -134,6 +136,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add assistant message
             addMessage('assistant', data.response);
+            
+            // Update message counter and progress
+            if (data.message_count !== undefined && data.min_messages_needed !== undefined) {
+                messageCounter.textContent = `${data.message_count}/${data.min_messages_needed} 메시지`;
+                messageProgress.style.width = `${data.progress_percentage}%`;
+            }
             
             // Update assessment progress bars
             updateAssessmentProgress(data.assessment_state);
@@ -282,6 +290,10 @@ document.addEventListener('DOMContentLoaded', function() {
         snConfidence.textContent = '0% confidence';
         tfConfidence.textContent = '0% confidence';
         jpConfidence.textContent = '0% confidence';
+        
+        // Reset message counter and progress
+        messageCounter.textContent = '0/10 메시지';
+        messageProgress.style.width = '0%';
         
         [eiProgress, snProgress, tfProgress, jpProgress].forEach(bar => {
             bar.classList.remove('bg-danger', 'bg-warning', 'bg-success');
