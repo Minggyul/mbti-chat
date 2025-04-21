@@ -58,11 +58,15 @@ def chat():
         session['message_count'] = message_count
         
         # Process message through MBTI analyzer
+        min_messages_needed = session.get('min_messages_needed', 10)
+        
         response, updated_assessment_state, assessment_complete = mbti_analyzer.process_message(
             user_message, 
             conversation,
             assessment_state,
-            assessment_complete
+            assessment_complete,
+            message_count,
+            min_messages_needed
         )
         
         # Add AI response to conversation history

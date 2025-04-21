@@ -17,7 +17,7 @@ class MBTIAnalyzer:
         self.client = OpenAI(api_key=self.openai_api_key)
         self.confidence_threshold = 0.8  # Threshold to determine when assessment is complete - higher value requires longer conversations
 
-    def process_message(self, user_message, conversation, assessment_state, assessment_complete):
+    def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=10):
         """
         Process user message and update MBTI assessment state.
         
@@ -26,6 +26,8 @@ class MBTIAnalyzer:
             conversation (list): Conversation history
             assessment_state (dict): Current MBTI assessment scores and confidence
             assessment_complete (bool): Whether assessment is complete
+            message_count (int): Current number of user messages
+            min_messages_needed (int): Minimum number of user messages required for assessment
             
         Returns:
             tuple: (AI response, updated assessment state, assessment complete flag)
@@ -33,17 +35,35 @@ class MBTIAnalyzer:
         try:
             # If assessment is already complete, just have a normal conversation
             if assessment_complete:
-                response = self._generate_response(user_message, conversation, assessment_state, True)
+                response = self._generate_response(
+                    user_message, 
+                    conversation, 
+                    assessment_state, 
+                    True,
+                    message_count,
+                    min_messages_needed
+                )
                 return response, assessment_state, assessment_complete
             
             # Analyze the message for MBTI traits and get updated assessment
             updated_assessment = self._analyze_mbti_traits(user_message, conversation, assessment_state)
             
-            # Check if assessment is complete based on confidence levels
-            is_complete = self._check_assessment_complete(updated_assessment)
+            # Check if assessment is complete based on confidence levels and message count
+            is_complete = self._check_assessment_complete(
+                updated_assessment,
+                message_count,
+                min_messages_needed
+            )
             
             # Generate appropriate response based on assessment state
-            response = self._generate_response(user_message, conversation, updated_assessment, is_complete)
+            response = self._generate_response(
+                user_message, 
+                conversation, 
+                updated_assessment, 
+                is_complete,
+                message_count,
+                min_messages_needed
+            )
             
             return response, updated_assessment, is_complete
             
@@ -152,16 +172,23 @@ class MBTIAnalyzer:
             # Return original assessment if analysis fails
             return current_assessment
 
-    def _check_assessment_complete(self, assessment):
+    def _check_assessment_complete(self, assessment, message_count=0, min_messages_needed=10):
         """
-        Check if MBTI assessment is complete based on confidence thresholds.
+        Check if MBTI assessment is complete based on confidence thresholds and
+        minimum number of messages.
         
         Args:
             assessment (dict): Current MBTI assessment state
+            message_count (int): Current number of user messages
+            min_messages_needed (int): Minimum number of user messages required
             
         Returns:
             bool: True if assessment is complete, False otherwise
         """
+        # Check if minimum message count is reached
+        if message_count < min_messages_needed:
+            return False
+            
         # Check if all dimensions have confidence above threshold
         for dimension, values in assessment.items():
             if values['confidence'] < self.confidence_threshold:
@@ -169,7 +196,7 @@ class MBTIAnalyzer:
         
         return True
 
-    def _generate_response(self, user_message, conversation, assessment, is_complete):
+    def _generate_response(self, user_message, conversation, assessment, is_complete, message_count=0, min_messages_needed=10):
         """
         Generate appropriate response based on assessment state.
         
@@ -178,6 +205,8 @@ class MBTIAnalyzer:
             conversation (list): Conversation history
             assessment (dict): Current MBTI assessment state
             is_complete (bool): Whether assessment is complete
+            message_count (int): Current number of user messages
+            min_messages_needed (int): Minimum number of user messages required
             
         Returns:
             str: AI response
@@ -262,6 +291,7 @@ class MBTIAnalyzer:
             T/F: Score {assessment['T_F']['score']:.2f}, Confidence {assessment['T_F']['confidence']:.2f}
             J/P: Score {assessment['J_P']['score']:.2f}, Confidence {assessment['J_P']['confidence']:.2f}
             
+            Message count: {message_count} of {min_messages_needed} required messages
             Dimensions that need more assessment: {", ".join(low_confidence_dimensions)}
             
             The dimension with the lowest confidence is: {focus_dimension}
