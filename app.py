@@ -78,8 +78,34 @@ def chat():
             # Calculate MBTI type when assessment is complete
             mbti_type = mbti_analyzer.calculate_mbti_type(updated_assessment_state)
             mbti_description = mbti_analyzer.get_mbti_description(mbti_type)
+            
+            # Add reasoning for each dimension
+            reasoning = {
+                'E_I': {
+                    'label': "외향적" if updated_assessment_state['E_I']['score'] > 0 else "내향적",
+                    'score': abs(updated_assessment_state['E_I']['score']),
+                    'confidence': updated_assessment_state['E_I']['confidence']
+                },
+                'S_N': {
+                    'label': "감각적" if updated_assessment_state['S_N']['score'] < 0 else "직관적",
+                    'score': abs(updated_assessment_state['S_N']['score']),
+                    'confidence': updated_assessment_state['S_N']['confidence']
+                },
+                'T_F': {
+                    'label': "사고적" if updated_assessment_state['T_F']['score'] < 0 else "감정적",
+                    'score': abs(updated_assessment_state['T_F']['score']),
+                    'confidence': updated_assessment_state['T_F']['confidence']
+                },
+                'J_P': {
+                    'label': "판단적" if updated_assessment_state['J_P']['score'] < 0 else "인식적",
+                    'score': abs(updated_assessment_state['J_P']['score']),
+                    'confidence': updated_assessment_state['J_P']['confidence']
+                }
+            }
+            
             result["mbti_type"] = mbti_type
             result["mbti_description"] = mbti_description
+            result["mbti_reasoning"] = reasoning
         
         return jsonify(result)
         

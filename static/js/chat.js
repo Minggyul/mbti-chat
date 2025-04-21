@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const mbtiStrengths = document.getElementById('mbtiStrengths');
     const mbtiWeaknesses = document.getElementById('mbtiWeaknesses');
     
+    // Reasoning elements
+    const eiReasoning = document.getElementById('eiReasoning');
+    const snReasoning = document.getElementById('snReasoning');
+    const tfReasoning = document.getElementById('tfReasoning');
+    const jpReasoning = document.getElementById('jpReasoning');
+    
     // Init state
     let isWaitingForResponse = false;
     let typingIndicator = null;
@@ -227,6 +233,34 @@ document.addEventListener('DOMContentLoaded', function() {
         mbtiDescription.textContent = data.mbti_description.description;
         mbtiStrengths.textContent = data.mbti_description.strengths;
         mbtiWeaknesses.textContent = data.mbti_description.weaknesses;
+        
+        // Update reasoning content if available
+        if (data.mbti_reasoning) {
+            const reasoning = data.mbti_reasoning;
+            
+            // Format: "Label (score: X.XX, confidence: X.XX)"
+            eiReasoning.textContent = `${reasoning.E_I.label} (점수: ${reasoning.E_I.score.toFixed(2)}, 확신도: ${(reasoning.E_I.confidence * 100).toFixed(0)}%)`;
+            snReasoning.textContent = `${reasoning.S_N.label} (점수: ${reasoning.S_N.score.toFixed(2)}, 확신도: ${(reasoning.S_N.confidence * 100).toFixed(0)}%)`;
+            tfReasoning.textContent = `${reasoning.T_F.label} (점수: ${reasoning.T_F.score.toFixed(2)}, 확신도: ${(reasoning.T_F.confidence * 100).toFixed(0)}%)`;
+            jpReasoning.textContent = `${reasoning.J_P.label} (점수: ${reasoning.J_P.score.toFixed(2)}, 확신도: ${(reasoning.J_P.confidence * 100).toFixed(0)}%)`;
+            
+            // Add color coding based on confidence
+            [
+                { element: eiReasoning, confidence: reasoning.E_I.confidence },
+                { element: snReasoning, confidence: reasoning.S_N.confidence },
+                { element: tfReasoning, confidence: reasoning.T_F.confidence },
+                { element: jpReasoning, confidence: reasoning.J_P.confidence }
+            ].forEach(item => {
+                item.element.classList.remove('text-danger', 'text-warning', 'text-success');
+                if (item.confidence > 0.8) {
+                    item.element.classList.add('text-success');
+                } else if (item.confidence > 0.6) {
+                    item.element.classList.add('text-warning');
+                } else {
+                    item.element.classList.add('text-danger');
+                }
+            });
+        }
     }
     
     // Reset chat

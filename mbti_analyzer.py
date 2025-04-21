@@ -15,7 +15,7 @@ class MBTIAnalyzer:
         self.model = "gpt-4o"
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.client = OpenAI(api_key=self.openai_api_key)
-        self.confidence_threshold = 0.7  # Threshold to determine when assessment is complete
+        self.confidence_threshold = 0.8  # Threshold to determine when assessment is complete - higher value requires longer conversations
 
     def process_message(self, user_message, conversation, assessment_state, assessment_complete):
         """
@@ -65,7 +65,7 @@ class MBTIAnalyzer:
         """
         # Prepare conversation context for analysis
         context = []
-        for message in conversation[-5:]:  # Use last 5 messages for context
+        for message in conversation[-8:]:  # Use last 8 messages for context to provide more history
             context.append({"role": message["role"], "content": message["content"]})
         
         # Define the analysis prompt
@@ -184,19 +184,31 @@ class MBTIAnalyzer:
         """
         # Prepare conversation context
         context = []
-        for message in conversation[-5:]:  # Use last 5 messages for context
+        for message in conversation[-8:]:  # Use last 8 messages for context
             context.append({"role": message["role"], "content": message["content"]})
         
         # Define the system prompt based on assessment state
         if is_complete:
             mbti_type = self.calculate_mbti_type(assessment)
+            
+            # Generate reasoning for each dimension
+            e_i_reason = "외향적" if assessment['E_I']['score'] > 0 else "내향적"
+            s_n_reason = "감각적" if assessment['S_N']['score'] < 0 else "직관적"
+            t_f_reason = "사고적" if assessment['T_F']['score'] < 0 else "감정적"
+            j_p_reason = "판단적" if assessment['J_P']['score'] < 0 else "인식적"
+            
             system_prompt = f"""
             You are a friendly personality assessment chatbot. The user's MBTI assessment is now complete, 
             and they appear to be a {mbti_type} personality type.
             
-            Continue the conversation naturally. If they ask about their personality type, you can share their
-            result ({mbti_type}) and explain what that means. Otherwise, engage in casual friendly conversation
-            that might further confirm their type.
+            The assessment shows they are:
+            - {e_i_reason} (점수: {abs(assessment['E_I']['score']):.2f}, 확신도: {assessment['E_I']['confidence']:.2f})
+            - {s_n_reason} (점수: {abs(assessment['S_N']['score']):.2f}, 확신도: {assessment['S_N']['confidence']:.2f})
+            - {t_f_reason} (점수: {abs(assessment['T_F']['score']):.2f}, 확신도: {assessment['T_F']['confidence']:.2f})
+            - {j_p_reason} (점수: {abs(assessment['J_P']['score']):.2f}, 확신도: {assessment['J_P']['confidence']:.2f})
+            
+            When the user asks about their results, share their MBTI type ({mbti_type}) and explain the reasoning
+            behind each dimension, including specific examples from the conversation that led to this assessment.
             
             Be warm, personable, and avoid any stilted or clinical tone. Talk like a supportive friend.
             """
@@ -206,6 +218,38 @@ class MBTIAnalyzer:
             for dimension, values in assessment.items():
                 if values['confidence'] < self.confidence_threshold:
                     low_confidence_dimensions.append(dimension)
+            
+            # Suggest specific target questions based on dimensions that need assessment
+            target_questions = {
+                'E_I': [
+                    "주말에 어떻게 시간을 보내는 것을 좋아하시나요?",
+                    "많은 사람들과 함께 있을 때와 혼자 있을 때 어떤 기분이 드나요?",
+                    "새로운 사람들을 만나는 자리에서 어떤 느낌이 드나요?",
+                    "에너지를 얻는 방법에 대해 이야기해 주실 수 있나요?"
+                ],
+                'S_N': [
+                    "미래에 대해 계획을 세울 때 어떤 방식으로 접근하시나요?",
+                    "문제를 해결할 때 주로 어떤 접근 방식을 사용하시나요?",
+                    "새로운 아이디어나 개념을 접할 때 어떤 면에 더 집중하시나요?",
+                    "정보를 기억하고 처리하는 데 어떤 방식이 가장 편하신가요?"
+                ],
+                'T_F': [
+                    "어려운 결정을 내릴 때 주로 어떤 요소를 고려하시나요?",
+                    "다른 사람과 의견 충돌이 있을 때 어떻게 대처하시나요?",
+                    "다른 사람에게 피드백을 줄 때 어떤 접근 방식을 선호하시나요?",
+                    "타인의 감정을 다루는 상황에서 어떤 경험이 있으신가요?"
+                ],
+                'J_P': [
+                    "일상에서 계획을 세우는 편인가요, 즉흥적으로 행동하는 편인가요?",
+                    "업무나 과제를 진행할 때 어떤 방식으로 접근하시나요?",
+                    "마감 기한이 있는 일을 처리할 때는 보통 어떻게 하시나요?",
+                    "예상치 못한 변화가 생길 때 어떻게 대응하시나요?"
+                ]
+            }
+            
+            # Find a dimension to focus on (lowest confidence first)
+            sorted_dimensions = sorted(assessment.items(), key=lambda x: x[1]['confidence'])
+            focus_dimension = sorted_dimensions[0][0]  # Get the dimension with lowest confidence
             
             system_prompt = f"""
             You are a friendly personality assessment chatbot having a natural conversation to determine 
@@ -220,15 +264,20 @@ class MBTIAnalyzer:
             
             Dimensions that need more assessment: {", ".join(low_confidence_dimensions)}
             
+            The dimension with the lowest confidence is: {focus_dimension}
+            
+            Here are some target questions you can use to assess this dimension:
+            {target_questions[focus_dimension]}
+            
             Guidelines:
             1. Maintain a casual, friendly conversation - don't make it obvious you're assessing them
-            2. Ask open-ended questions that might reveal personality traits, especially for dimensions with low confidence
+            2. Ask SPECIFIC open-ended questions that might reveal personality traits, especially for dimensions with low confidence
             3. Avoid directly asking about MBTI or explaining that you're assessing them
             4. If they ask what you're doing, be honest but gentle about the personality assessment
             5. Keep responses conversational and not overly long
-            6. Respond to the user's message directly, then guide the conversation with a question
+            6. Respond to the user's message directly, then guide the conversation with ONE specific question
             
-            Keep the conversation flowing naturally as if you're just chatting with a friend.
+            Keep the conversation flowing naturally as if you're just chatting with a friend, but be strategic about getting information about their personality traits.
             """
         
         try:
