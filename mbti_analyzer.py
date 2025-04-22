@@ -17,7 +17,7 @@ class MBTIAnalyzer:
         self.client = OpenAI(api_key=self.openai_api_key)
         self.confidence_threshold = 0.8  # Threshold to determine when assessment is complete - higher value requires longer conversations
 
-    def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=10):
+    def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=10, last_focus_dimension=None):
         """
         Process user message and update MBTI assessment state.
         
@@ -28,9 +28,10 @@ class MBTIAnalyzer:
             assessment_complete (bool): Whether assessment is complete
             message_count (int): Current number of user messages
             min_messages_needed (int): Minimum number of user messages required for assessment
+            last_focus_dimension (str): The dimension that was focused on in the previous message
             
         Returns:
-            tuple: (AI response, updated assessment state, assessment complete flag)
+            tuple: (AI response, updated assessment state, assessment complete flag, last focused dimension)
         """
         try:
             # If assessment is already complete, just have a normal conversation
@@ -157,8 +158,9 @@ class MBTIAnalyzer:
                         (new['score'] * new['confidence'])
                     ) / total_confidence
                     
-                    # Increase confidence, but don't exceed 1.0
-                    new_confidence = min(total_confidence * 0.8, 1.0)
+                    # Increase confidence, but at a slower rate and don't exceed 0.95
+                    # Use a smaller factor (0.6 instead of 0.8) and cap at 0.95 to always allow for more questions
+                    new_confidence = min(current['confidence'] + (new['confidence'] * 0.3), 0.95)
                     
                     updated_assessment[dimension] = {
                         'score': weighted_score,
@@ -276,9 +278,33 @@ class MBTIAnalyzer:
                 ]
             }
             
-            # Find a dimension to focus on (lowest confidence first)
-            sorted_dimensions = sorted(assessment.items(), key=lambda x: x[1]['confidence'])
-            focus_dimension = sorted_dimensions[0][0]  # Get the dimension with lowest confidence
+            # Find a dimension to focus on based on a rotation strategy and confidence levels
+            # Use a rotation strategy with weighting towards dimensions with lower confidence
+            
+            # Get previous focus dimension from app.py session
+            # We'll pass it as a parameter in a future refactor, but for now hardcode to None
+            prev_focus = None
+            
+            # Create a weighted list based on inverse confidence
+            dimension_weights = {}
+            for dim, values in assessment.items():
+                # Higher weight for lower confidence
+                # Avoid division by zero by adding a small constant
+                weight = 1.0 / (values['confidence'] + 0.1)
+                
+                # Give lower weight to the previously focused dimension to encourage rotation
+                if dim == prev_focus:
+                    weight *= 0.5
+                    
+                dimension_weights[dim] = weight
+            
+            # Sort by weight (highest weight first)
+            sorted_dimensions = sorted(dimension_weights.items(), key=lambda x: x[1], reverse=True)
+            focus_dimension = sorted_dimensions[0][0]  # Get the dimension with highest weight
+            
+            # Store the focus dimension for tracking but don't add it to context 
+            # as it would appear in the conversation history
+            last_focus_dimension = focus_dimension
             
             system_prompt = f"""
             You are a friendly personality assessment chatbot having a natural conversation to determine 

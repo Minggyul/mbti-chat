@@ -29,6 +29,7 @@ def index():
     session['assessment_complete'] = False
     session['message_count'] = 0  # Track number of user messages
     session['min_messages_needed'] = 10  # Minimum messages for good assessment
+    session['last_focus_dimension'] = None  # Track the dimension focused on in the last message
     
     return render_template('index.html')
 
@@ -139,6 +140,7 @@ def reset():
     }
     session['assessment_complete'] = False
     session['message_count'] = 0  # Reset message counter
+    session['last_focus_dimension'] = None  # Reset last focus dimension
     
     return jsonify({"status": "success", "message": "Conversation reset"})
 
