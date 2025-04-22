@@ -55,7 +55,7 @@ def init_routes(app):
             session['assessment_state'] = initial_assessment_state
             session['assessment_complete'] = False
             session['message_count'] = 0
-            session['min_messages_needed'] = 10
+            session['min_messages_needed'] = 5   # 10개에서 5개로 변경
             session['last_focus_dimension'] = None
             session['conversation_id'] = conversation_record.id
         else:
@@ -72,7 +72,7 @@ def init_routes(app):
             session['assessment_state'] = conversation_record.assessment_state
             session['assessment_complete'] = conversation_record.is_complete
             session['message_count'] = conversation_record.message_count
-            session['min_messages_needed'] = 10
+            session['min_messages_needed'] = 5  # 10개에서 5개로 변경
             session['last_focus_dimension'] = conversation_record.last_focus_dimension
             session['conversation_id'] = conversation_record.id
         
@@ -127,7 +127,7 @@ def init_routes(app):
             session['message_count'] = message_count
             
             # Process message through MBTI analyzer
-            min_messages_needed = session.get('min_messages_needed', 10)
+            min_messages_needed = session.get('min_messages_needed', 5)  # 10개에서 5개로 변경
             last_focus_dimension = session.get('last_focus_dimension', None)
             
             response, updated_assessment_state, assessment_complete, new_focus_dimension = mbti_analyzer.process_message(
@@ -191,7 +191,7 @@ def init_routes(app):
             session['assessment_complete'] = assessment_complete
             
             # Prepare response
-            min_messages = session.get('min_messages_needed', 10)
+            min_messages = session.get('min_messages_needed', 5)  # 10개에서 5개로 변경
             result = {
                 "response": response,
                 "assessment_state": updated_assessment_state,
@@ -289,6 +289,7 @@ def init_routes(app):
             session['assessment_state'] = initial_assessment_state
             session['assessment_complete'] = False
             session['message_count'] = 0
+            session['min_messages_needed'] = 5  # 필요한 메시지 수를 5개로 설정
             session['last_focus_dimension'] = None
             
             return jsonify({"status": "success", "message": "대화가 초기화되었습니다."})

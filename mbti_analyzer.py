@@ -17,7 +17,7 @@ class MBTIAnalyzer:
         self.client = OpenAI(api_key=self.openai_api_key)
         self.confidence_threshold = 0.8  # Threshold to determine when assessment is complete - higher value requires longer conversations
 
-    def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=10, last_focus_dimension=None):
+    def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=5, last_focus_dimension=None):
         """
         Process user message and update MBTI assessment state.
         
@@ -27,7 +27,7 @@ class MBTIAnalyzer:
             assessment_state (dict): Current MBTI assessment scores and confidence
             assessment_complete (bool): Whether assessment is complete
             message_count (int): Current number of user messages
-            min_messages_needed (int): Minimum number of user messages required for assessment
+            min_messages_needed (int): Minimum number of user messages required for assessment (기본값 5개로 변경)
             last_focus_dimension (str): The dimension that was focused on in the previous message
             
         Returns:
@@ -176,7 +176,7 @@ class MBTIAnalyzer:
             # Return original assessment if analysis fails
             return current_assessment
 
-    def _check_assessment_complete(self, assessment, message_count=0, min_messages_needed=10):
+    def _check_assessment_complete(self, assessment, message_count=0, min_messages_needed=5):
         """
         Check if MBTI assessment is complete based on confidence thresholds and
         minimum number of messages.
@@ -184,7 +184,7 @@ class MBTIAnalyzer:
         Args:
             assessment (dict): Current MBTI assessment state
             message_count (int): Current number of user messages
-            min_messages_needed (int): Minimum number of user messages required
+            min_messages_needed (int): Minimum number of user messages required (기본값 5개로 변경)
             
         Returns:
             bool: True if assessment is complete, False otherwise
@@ -200,7 +200,7 @@ class MBTIAnalyzer:
         
         return True
 
-    def _generate_response(self, user_message, conversation, assessment, is_complete, message_count=0, min_messages_needed=10, last_focus_dimension=None):
+    def _generate_response(self, user_message, conversation, assessment, is_complete, message_count=0, min_messages_needed=5, last_focus_dimension=None):
         """
         Generate appropriate response based on assessment state.
         
