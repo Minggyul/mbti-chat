@@ -60,15 +60,20 @@ def chat():
         
         # Process message through MBTI analyzer
         min_messages_needed = session.get('min_messages_needed', 10)
+        last_focus_dimension = session.get('last_focus_dimension', None)
         
-        response, updated_assessment_state, assessment_complete = mbti_analyzer.process_message(
+        response, updated_assessment_state, assessment_complete, new_focus_dimension = mbti_analyzer.process_message(
             user_message, 
             conversation,
             assessment_state,
             assessment_complete,
             message_count,
-            min_messages_needed
+            min_messages_needed,
+            last_focus_dimension
         )
+        
+        # Update the last focus dimension in session
+        session['last_focus_dimension'] = new_focus_dimension
         
         # Add AI response to conversation history
         conversation.append({"role": "assistant", "content": response})

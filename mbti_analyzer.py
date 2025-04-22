@@ -36,15 +36,16 @@ class MBTIAnalyzer:
         try:
             # If assessment is already complete, just have a normal conversation
             if assessment_complete:
-                response = self._generate_response(
+                response, next_focus = self._generate_response(
                     user_message, 
                     conversation, 
                     assessment_state, 
                     True,
                     message_count,
-                    min_messages_needed
+                    min_messages_needed,
+                    last_focus_dimension
                 )
-                return response, assessment_state, assessment_complete
+                return response, assessment_state, assessment_complete, next_focus
             
             # Analyze the message for MBTI traits and get updated assessment
             updated_assessment = self._analyze_mbti_traits(user_message, conversation, assessment_state)
@@ -57,20 +58,21 @@ class MBTIAnalyzer:
             )
             
             # Generate appropriate response based on assessment state
-            response = self._generate_response(
+            response, new_focus_dimension = self._generate_response(
                 user_message, 
                 conversation, 
                 updated_assessment, 
                 is_complete,
                 message_count,
-                min_messages_needed
+                min_messages_needed,
+                last_focus_dimension
             )
             
-            return response, updated_assessment, is_complete
+            return response, updated_assessment, is_complete, new_focus_dimension
             
         except Exception as e:
             logger.error(f"Error processing message: {str(e)}")
-            return "I'm having trouble processing your message. Could you try again?", assessment_state, assessment_complete
+            return "I'm having trouble processing your message. Could you try again?", assessment_state, assessment_complete, None
 
     def _analyze_mbti_traits(self, user_message, conversation, current_assessment):
         """
@@ -198,7 +200,7 @@ class MBTIAnalyzer:
         
         return True
 
-    def _generate_response(self, user_message, conversation, assessment, is_complete, message_count=0, min_messages_needed=10):
+    def _generate_response(self, user_message, conversation, assessment, is_complete, message_count=0, min_messages_needed=10, last_focus_dimension=None):
         """
         Generate appropriate response based on assessment state.
         
@@ -209,9 +211,10 @@ class MBTIAnalyzer:
             is_complete (bool): Whether assessment is complete
             message_count (int): Current number of user messages
             min_messages_needed (int): Minimum number of user messages required
+            last_focus_dimension (str): The dimension that was focused on in the previous message
             
         Returns:
-            str: AI response
+            tuple: (AI response, next dimension to focus on)
         """
         # Prepare conversation context
         context = []
@@ -219,6 +222,8 @@ class MBTIAnalyzer:
             context.append({"role": message["role"], "content": message["content"]})
         
         # Define the system prompt based on assessment state
+        next_focus_dimension = None  # Initialize the return value
+        
         if is_complete:
             mbti_type = self.calculate_mbti_type(assessment)
             
@@ -281,9 +286,8 @@ class MBTIAnalyzer:
             # Find a dimension to focus on based on a rotation strategy and confidence levels
             # Use a rotation strategy with weighting towards dimensions with lower confidence
             
-            # Get previous focus dimension from app.py session
-            # We'll pass it as a parameter in a future refactor, but for now hardcode to None
-            prev_focus = None
+            # Use the previous focus dimension that was passed in
+            prev_focus = last_focus_dimension
             
             # Create a weighted list based on inverse confidence
             dimension_weights = {}
@@ -302,9 +306,8 @@ class MBTIAnalyzer:
             sorted_dimensions = sorted(dimension_weights.items(), key=lambda x: x[1], reverse=True)
             focus_dimension = sorted_dimensions[0][0]  # Get the dimension with highest weight
             
-            # Store the focus dimension for tracking but don't add it to context 
-            # as it would appear in the conversation history
-            last_focus_dimension = focus_dimension
+            # Store the focus dimension for tracking and return it in the API
+            next_focus_dimension = focus_dimension
             
             system_prompt = f"""
             You are a friendly personality assessment chatbot having a natural conversation to determine 
@@ -346,11 +349,11 @@ class MBTIAnalyzer:
                 ]
             )
             
-            return response.choices[0].message.content
+            return response.choices[0].message.content, next_focus_dimension
             
         except Exception as e:
             logger.error(f"Error generating response: {str(e)}")
-            return "I'm having trouble generating a response. Let's continue our conversation. How are you feeling today?"
+            return "I'm having trouble generating a response. Let's continue our conversation. How are you feeling today?", None
 
     def calculate_mbti_type(self, assessment):
         """
