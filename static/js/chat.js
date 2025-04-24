@@ -143,6 +143,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update assessment progress bars
             updateAssessmentProgress(data.assessment_state);
             
+            // 현재 메시지 수와 완료 상태 로깅
+            console.log("현재 메시지 상태:", {
+                message_count: data.message_count,
+                min_messages_needed: data.min_messages_needed,
+                assessment_complete: data.assessment_complete,
+                progress_percentage: data.progress_percentage
+            });
+            
             // Check if assessment is complete
             if (data.assessment_complete) {
                 console.log("MBTI 평가 완료 감지됨:", data.mbti_type);

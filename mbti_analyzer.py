@@ -208,7 +208,8 @@ class MBTIAnalyzer:
             return True
         
         # 2. 메시지 카운트가 정확히 min_messages_needed에 도달한 경우 (5개 메시지) - 강제 완료
-        if message_count >= min_messages_needed:
+        # 단, 첫 대화는 시스템 메시지이므로 정확히 5개가 채워졌을 때 완료하도록 조건 설정 (>=가 아닌 ==)
+        if message_count == min_messages_needed:
             logger.debug(f"메시지 개수 {message_count}개로 MBTI 평가 완료 (강제)")
             return True
         
