@@ -137,11 +137,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add assistant message
             addMessage('assistant', data.response);
             
-            // Update message counter and progress
-            if (data.message_count !== undefined && data.min_messages_needed !== undefined) {
-                messageCounter.textContent = `${data.message_count}/${data.min_messages_needed} 메시지`;
-                messageProgress.style.width = `${data.progress_percentage}%`;
-            }
+            // 메시지 진행도 표시 기능 제거
+            // 내부적으로는 계속 추적하지만 UI에는 표시하지 않음
             
             // Update assessment progress bars
             updateAssessmentProgress(data.assessment_state);
@@ -291,9 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tfConfidence.textContent = '0% confidence';
         jpConfidence.textContent = '0% confidence';
         
-        // Reset message counter and progress
-        messageCounter.textContent = '0/10 메시지';
-        messageProgress.style.width = '0%';
+        // 메시지 진행도 관련 기능 제거
         
         [eiProgress, snProgress, tfProgress, jpProgress].forEach(bar => {
             bar.classList.remove('bg-danger', 'bg-warning', 'bg-success');
@@ -309,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(() => {
             // Add initial message
-            addMessage('assistant', 'Hello! I\'m here to chat with you and get to know you better. How are you doing today?');
+            addMessage('assistant', '안녕하세요! 오늘 어떻게 지내고 계신가요? 편하게 대화하면서 서로 알아가 봐요.');
         })
         .catch(error => {
             console.error('Error:', error);

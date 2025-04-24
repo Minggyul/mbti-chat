@@ -255,31 +255,31 @@ class MBTIAnalyzer:
                 if values['confidence'] < self.confidence_threshold:
                     low_confidence_dimensions.append(dimension)
             
-            # Suggest specific target questions based on dimensions that need assessment
+            # 대화의 맥락에 맞게 자연스럽게 물어볼 수 있는 질문들
             target_questions = {
                 'E_I': [
-                    "주말에 어떻게 시간을 보내는 것을 좋아하시나요?",
-                    "많은 사람들과 함께 있을 때와 혼자 있을 때 어떤 기분이 드나요?",
-                    "새로운 사람들을 만나는 자리에서 어떤 느낌이 드나요?",
-                    "에너지를 얻는 방법에 대해 이야기해 주실 수 있나요?"
+                    "혹시 주말에는 주로 어떻게 시간을 보내세요? 친구들과 만나는 걸 즐기시나요, 아니면 조용히 혼자만의 시간을 갖는 걸 선호하시나요?",
+                    "대화하다 보니 궁금한데요, 새로운 사람들을 만날 때 어떤 느낌이 드세요? 설레는 편인가요, 아니면 조금 긴장되시나요?",
+                    "요즘 바쁘게 지내시는 것 같은데, 스트레스 해소는 어떻게 하시나요? 혼자 조용히 쉬는 게 좋으신가요, 아니면 다른 사람들과 어울리면서 에너지를 충전하시나요?",
+                    "오늘 이야기를 나누면서 느꼈는데요, 큰 모임에서 여러 사람들과 대화할 때와 소수의 친한 사람들과 깊은 대화를 나눌 때 어느 쪽이 더 편하세요?"
                 ],
                 'S_N': [
-                    "미래에 대해 계획을 세울 때 어떤 방식으로 접근하시나요?",
-                    "문제를 해결할 때 주로 어떤 접근 방식을 사용하시나요?",
-                    "새로운 아이디어나 개념을 접할 때 어떤 면에 더 집중하시나요?",
-                    "정보를 기억하고 처리하는 데 어떤 방식이 가장 편하신가요?"
+                    "방금 말씀하신 내용을 들으니 궁금한데요, 새로운 정보를 접할 때 구체적인 사실에 집중하시나요, 아니면 그 정보가 가진 의미나 가능성을 더 먼저 생각하시나요?",
+                    "그런 상황에서는 어떻게 대처하셨어요? 보통 문제를 해결할 때 경험이나 사실에 기반해서 접근하시나요, 아니면 직관이나 가능성을 탐색하는 편이신가요?",
+                    "말씀하신 취미가 흥미롭네요. 새로운 것을 배울 때 단계별로 차근차근 배우는 걸 선호하시나요, 아니면 큰 그림을 먼저 파악하고 시작하는 편인가요?",
+                    "이 대화를 통해 서로를 알아가는 것도 재미있는 과정 같은데요, 평소에 미래에 대해 생각할 때 구체적인 계획을 세우시는 편인가요, 아니면 다양한 가능성을 열어두시나요?"
                 ],
                 'T_F': [
-                    "어려운 결정을 내릴 때 주로 어떤 요소를 고려하시나요?",
-                    "다른 사람과 의견 충돌이 있을 때 어떻게 대처하시나요?",
-                    "다른 사람에게 피드백을 줄 때 어떤 접근 방식을 선호하시나요?",
-                    "타인의 감정을 다루는 상황에서 어떤 경험이 있으신가요?"
+                    "아까 말씀하신 경험이 인상적이네요. 그런 중요한 결정을 내릴 때 주로 논리와 사실에 기반해서 결정하시나요, 아니면 사람들의 감정이나 가치를 더 중요하게 생각하시나요?",
+                    "흥미로운 관점이세요. 누군가와 의견이 다를 때는 보통 어떻게 대화하시나요? 객관적인 사실을 중심으로 이야기하시나요, 아니면 서로의 감정과 조화를 더 중요시하시나요?",
+                    "방금 하신 이야기가 공감이 가네요. 주변 사람들이 당신에 대해 어떻게 표현하나요? 논리적이고 분석적이라고 하나요, 아니면 배려심이 깊고 공감을 잘한다고 하나요?",
+                    "오늘 대화가 정말 즐겁네요. 평소 갈등 상황에서는 어떻게 대처하시나요? 문제를 논리적으로 해결하는 걸 중요시하시나요, 아니면 관계의 조화를 더 중요하게 생각하시나요?"
                 ],
                 'J_P': [
-                    "일상에서 계획을 세우는 편인가요, 즉흥적으로 행동하는 편인가요?",
-                    "업무나 과제를 진행할 때 어떤 방식으로 접근하시나요?",
-                    "마감 기한이 있는 일을 처리할 때는 보통 어떻게 하시나요?",
-                    "예상치 못한 변화가 생길 때 어떻게 대응하시나요?"
+                    "그런 이야기를 들으니 더 궁금해지는데요, 일상생활에서 계획을 세우고 그대로 진행하는 걸 선호하시나요, 아니면 상황에 따라 유연하게 대처하는 편이신가요?",
+                    "말씀하신 내용이 흥미롭네요. 여행 가실 때는 어떠세요? 일정을 미리 꼼꼼하게 계획하시나요, 아니면 현지에서 즉흥적으로 결정하는 걸 즐기시나요?",
+                    "대화하면서 느꼈는데요, 마감 기한이 있는 일을 할 때 어떤 방식으로 진행하시나요? 미리 계획해서 차근차근 진행하시나요, 아니면 마감 직전에 집중해서 하시나요?",
+                    "지금까지 나눈 대화를 보니 궁금한데요, 주변 환경이 정돈되어 있는 걸 중요하게 생각하시나요, 아니면 약간의 혼란스러움이 있어도 크게 신경 쓰지 않으시나요?"
                 ]
             }
             
@@ -310,33 +310,34 @@ class MBTIAnalyzer:
             next_focus_dimension = focus_dimension
             
             system_prompt = f"""
-            You are a friendly personality assessment chatbot having a natural conversation to determine 
-            the user's MBTI personality type. Your goal is to ask questions and engage in dialogue that helps
-            reveal their personality traits.
+            당신은 자연스럽게 대화하면서 사용자의 MBTI 성격 유형을 파악하는 친근한 챗봇입니다. 
+            사용자의 성격 특성을 드러내는 대화를 이끌어내는 것이 목표입니다.
             
-            Current assessment state:
-            E/I: Score {assessment['E_I']['score']:.2f}, Confidence {assessment['E_I']['confidence']:.2f}
-            S/N: Score {assessment['S_N']['score']:.2f}, Confidence {assessment['S_N']['confidence']:.2f}
-            T/F: Score {assessment['T_F']['score']:.2f}, Confidence {assessment['T_F']['confidence']:.2f}
-            J/P: Score {assessment['J_P']['score']:.2f}, Confidence {assessment['J_P']['confidence']:.2f}
+            현재 평가 상태:
+            E/I: 점수 {assessment['E_I']['score']:.2f}, 확신도 {assessment['E_I']['confidence']:.2f}
+            S/N: 점수 {assessment['S_N']['score']:.2f}, 확신도 {assessment['S_N']['confidence']:.2f}
+            T/F: 점수 {assessment['T_F']['score']:.2f}, 확신도 {assessment['T_F']['confidence']:.2f}
+            J/P: 점수 {assessment['J_P']['score']:.2f}, 확신도 {assessment['J_P']['confidence']:.2f}
             
-            Message count: {message_count} of {min_messages_needed} required messages
-            Dimensions that need more assessment: {", ".join(low_confidence_dimensions)}
+            메시지 수: {message_count}/{min_messages_needed}
+            더 평가가 필요한 차원: {", ".join(low_confidence_dimensions)}
             
-            The dimension with the lowest confidence is: {focus_dimension}
+            가장 낮은 확신도를 가진 차원: {focus_dimension}
             
-            Here are some target questions you can use to assess this dimension:
+            다음은 이 차원을 평가하는 데 사용할 수 있는 자연스러운 질문들입니다:
             {target_questions[focus_dimension]}
             
-            Guidelines:
-            1. Maintain a casual, friendly conversation - don't make it obvious you're assessing them
-            2. Ask SPECIFIC open-ended questions that might reveal personality traits, especially for dimensions with low confidence
-            3. Avoid directly asking about MBTI or explaining that you're assessing them
-            4. If they ask what you're doing, be honest but gentle about the personality assessment
-            5. Keep responses conversational and not overly long
-            6. Respond to the user's message directly, then guide the conversation with ONE specific question
+            가이드라인:
+            1. 대화가 자연스럽게 흘러가야 함 - 평가 중임이 드러나지 않도록 유의
+            2. 이전 대화의 맥락을 활용하여 자연스럽게 새로운 질문으로 연결
+            3. 단순히 나열된 질문을 그대로 하지 말고, 대화의 흐름에 맞게 적절히 수정하여 질문
+            4. 사용자의 메시지에 먼저 충분히 반응한 후, 자연스럽게 다음 질문으로 이어갈 것
+            5. 대화가 부자연스럽게 느껴지지 않도록 주의
+            6. 공감과 호감을 표현하며 편안한 대화 분위기 조성
+            7. 너무 갑작스러운 주제 전환은 피할 것
             
-            Keep the conversation flowing naturally as if you're just chatting with a friend, but be strategic about getting information about their personality traits.
+            친구와 대화하듯 자연스럽게 대화를 이어가되, 사용자의 성격 특성에 관한 정보를 전략적으로 얻어내세요.
+            대화의 맥락과 흐름을 매우 중요하게 생각하고, 자연스러운 대화를 최우선으로 하세요.
             """
         
         try:
@@ -353,7 +354,7 @@ class MBTIAnalyzer:
             
         except Exception as e:
             logger.error(f"Error generating response: {str(e)}")
-            return "I'm having trouble generating a response. Let's continue our conversation. How are you feeling today?", None
+            return "죄송합니다, 대화를 이어가는 데 어려움이 있네요. 대화를 계속해 볼까요? 오늘 어떻게 지내고 계신가요?", None
 
     def calculate_mbti_type(self, assessment):
         """
