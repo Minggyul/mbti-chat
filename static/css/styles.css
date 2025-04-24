@@ -1,14 +1,14 @@
-/* Custom Styles for MBTI Chat - Bright Theme */
+/* Custom Styles for MBTI Chat - Simple Theme */
 :root {
-    --chat-primary: #FF6B6B;       /* 밝은 산호색 */
-    --chat-secondary: #4ECDC4;     /* 밝은 청록색 */
-    --chat-accent: #FFD166;        /* 밝은 노란색 */
+    --chat-primary: #4361EE;       /* 파란색 메인 컬러 */
+    --chat-secondary: #3F37C9;     /* 보조 파란색 */
+    --chat-accent: #4895EF;        /* 밝은 파란색 포인트 */
     --chat-light: #F8F9FA;         /* 밝은 배경색 */
     --chat-dark: #495057;          /* 어두운 텍스트 색상 */
-    --chat-success: #06D6A0;       /* 밝은 녹색 */
-    --chat-warning: #FF9A76;       /* 밝은 주황색 */
-    --chat-danger: #EF476F;        /* 밝은 분홍색 */
-    --chat-info: #118AB2;          /* 밝은 파란색 */
+    --chat-success: #4CC9F0;       /* 파란빛 성공 알림 */
+    --chat-warning: #4361EE;       /* 경고 메시지 컬러 */
+    --chat-danger: #3A0CA3;        /* 오류 메시지 컬러 */
+    --chat-info: #4895EF;          /* 정보 메시지 컬러 */
 }
 
 body {
@@ -164,8 +164,8 @@ header {
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background-color: #ff5252;
-    border-color: #ff5252;
+    background-color: #3F37C9;
+    border-color: #3F37C9;
 }
 
 .btn-outline-secondary {
@@ -197,7 +197,7 @@ header {
 
 .form-control:focus {
     border-color: var(--chat-accent);
-    box-shadow: 0 0 0 0.2rem rgba(255, 209, 102, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(72, 149, 239, 0.25);
 }
 
 /* Responsive adjustments */
