@@ -1,7 +1,7 @@
 /* Custom Styles for MBTI Chat - Simple Theme */
 :root {
-    --chat-primary: #4361EE;       /* 파란색 메인 컬러 */
-    --chat-secondary: #3F37C9;     /* 보조 파란색 */
+    --chat-primary: #4361EE;       /* 파란색 메인 컬러 - 사용자 메시지 */
+    --chat-secondary: #3A0CA3;     /* 짙은 파란색 - AI 메시지 */
     --chat-accent: #4895EF;        /* 밝은 파란색 포인트 */
     --chat-light: #F8F9FA;         /* 밝은 배경색 */
     --chat-dark: #495057;          /* 어두운 텍스트 색상 */
@@ -35,33 +35,38 @@ header {
     margin-bottom: 1rem;
     max-width: 80%;
     clear: both;
+    display: flex;
+    width: 100%;
 }
 
 .user-message {
-    float: right;
+    justify-content: flex-end;
 }
 
 .assistant-message {
-    float: left;
+    justify-content: flex-start;
 }
 
 .message-content {
     padding: 0.75rem 1rem;
     border-radius: 1.2rem;
-    display: inline-block;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    max-width: 100%;
 }
 
 .user-message .message-content {
     background-color: var(--chat-primary);
     color: white;
     border-top-right-radius: 0.2rem;
+    margin-left: auto;
+    text-align: right;
 }
 
 .assistant-message .message-content {
     background-color: var(--chat-secondary);
     color: white;
     border-top-left-radius: 0.2rem;
+    margin-right: auto;
 }
 
 #chatMessages {
@@ -91,6 +96,7 @@ header {
     border-radius: 1rem;
     border-top-left-radius: 0.2rem;
     margin-bottom: 1rem;
+    margin-right: auto;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 

@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.appendChild(messageContent);
         chatMessages.appendChild(messageDiv);
         
+        // Add clearfix after each message to ensure proper layout
+        const clearfix = document.createElement('div');
+        clearfix.style.clear = 'both';
+        chatMessages.appendChild(clearfix);
+        
         // Scroll to bottom
         scrollToBottom();
     }
@@ -99,6 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         chatMessages.appendChild(typingIndicator);
+        
+        // Add clearfix after typing indicator
+        const clearfix = document.createElement('div');
+        clearfix.style.clear = 'both';
+        chatMessages.appendChild(clearfix);
+        
         scrollToBottom();
     }
     
