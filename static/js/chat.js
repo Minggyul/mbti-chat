@@ -266,6 +266,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+        
+        // 모달에 MBTI 결과 업데이트 및 표시
+        document.getElementById('modalMbtiType').textContent = data.mbti_type;
+        document.getElementById('modalMbtiTitle').textContent = data.mbti_description.title;
+        document.getElementById('modalMbtiDescription').textContent = data.mbti_description.description;
+        
+        // 모달 표시
+        const resultModal = new bootstrap.Modal(document.getElementById('mbtiResultModal'));
+        resultModal.show();
     }
     
     // Reset chat
