@@ -145,12 +145,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check if assessment is complete
             if (data.assessment_complete) {
-                console.log("MBTI 평가 완료 감지됨");
+                console.log("MBTI 평가 완료 감지됨:", data.mbti_type);
                 completeAssessment(data);
                 
-                // 전역에 등록된 함수 사용하여 모달 표시
+                // 전역에 등록된 함수 사용하여 모달 표시 (더 길게 지연)
                 setTimeout(() => {
                     try {
+                        console.log("MBTI 모달 표시 시도:", data.mbti_type);
+                        
                         // 전역 함수를 통해 모달 표시
                         if (typeof window.showMbtiResultModal === 'function') {
                             window.showMbtiResultModal(
@@ -158,14 +160,44 @@ document.addEventListener('DOMContentLoaded', function() {
                                 data.mbti_description.title,
                                 data.mbti_description.description
                             );
-                            console.log("전역 함수로 모달 표시됨");
+                            console.log("전역 함수로 모달 표시됨:", data.mbti_type);
                         } else {
-                            console.error("showMbtiResultModal 함수를 찾을 수 없음");
+                            // 대체 방법으로 직접 모달 요소 접근
+                            console.log("showMbtiResultModal 함수를 찾을 수 없음, 직접 모달 접근");
+                            
+                            const modalEl = document.getElementById('mbtiResultModal');
+                            if (modalEl) {
+                                // 모달 내용 업데이트
+                                document.getElementById('modalMbtiType').textContent = data.mbti_type;
+                                document.getElementById('modalMbtiTitle').textContent = data.mbti_description.title;
+                                document.getElementById('modalMbtiDescription').textContent = data.mbti_description.description;
+                                
+                                // jQuery가 있는 경우 jQuery 방식으로 모달 표시
+                                if (typeof $ !== 'undefined') {
+                                    $('#mbtiResultModal').modal('show');
+                                    console.log("jQuery로 모달 표시됨");
+                                } 
+                                // Bootstrap 5 방식으로 모달 표시
+                                else if (typeof bootstrap !== 'undefined') {
+                                    const bsModal = new bootstrap.Modal(modalEl);
+                                    bsModal.show();
+                                    console.log("Bootstrap API로 모달 표시됨");
+                                }
+                                // 마지막 수단: 강제로 모달 표시
+                                else {
+                                    modalEl.style.display = 'block';
+                                    modalEl.classList.add('show');
+                                    document.body.classList.add('modal-open');
+                                    console.log("DOM 조작으로 모달 표시됨");
+                                }
+                            } else {
+                                console.error("모달 요소를 찾을 수 없음: mbtiResultModal");
+                            }
                         }
                     } catch (err) {
                         console.error("모달 표시 중 오류:", err);
                     }
-                }, 1000);
+                }, 1500);
             }
         })
         .catch(error => {

@@ -193,12 +193,26 @@ class MBTIAnalyzer:
         if message_count < min_messages_needed:
             return False
             
-        # Check if all dimensions have confidence above threshold
+        # 충분한 메시지 수(5개)에 도달했다면, 다음 경우에 완료로 간주:
+        # 1. 모든 차원이 신뢰도 임계값을 넘은 경우 (기존 조건)
+        # 2. 메시지 카운트가 min_messages_needed에 도달한 경우 (추가 조건)
+        
+        # 신뢰도가 낮은 차원 개수 확인
+        low_confidence_dimensions = 0
         for dimension, values in assessment.items():
             if values['confidence'] < self.confidence_threshold:
-                return False
+                low_confidence_dimensions += 1
         
-        return True
+        # 1. 모든 차원이 신뢰도 임계값을 넘은 경우
+        if low_confidence_dimensions == 0:
+            return True
+        
+        # 2. 메시지 카운트가 정확히 min_messages_needed에 도달한 경우 (5개 메시지) - 강제 완료
+        if message_count >= min_messages_needed:
+            logger.debug(f"메시지 개수 {message_count}개로 MBTI 평가 완료 (강제)")
+            return True
+        
+        return False
 
     def _generate_response(self, user_message, conversation, assessment, is_complete, message_count=0, min_messages_needed=5, last_focus_dimension=None):
         """
