@@ -148,27 +148,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("MBTI 평가 완료 감지됨");
                 completeAssessment(data);
                 
-                // 추가 안전장치: 모달 직접 호출
+                // 전역에 등록된 함수 사용하여 모달 표시
                 setTimeout(() => {
                     try {
-                        const mbtiModal = document.getElementById('mbtiResultModal');
-                        // 모달 데이터 설정
-                        document.getElementById('modalMbtiType').textContent = data.mbti_type;
-                        document.getElementById('modalMbtiTitle').textContent = data.mbti_description.title;
-                        document.getElementById('modalMbtiDescription').textContent = data.mbti_description.description;
-                        
-                        // 전역 모달 인스턴스 사용 시도
-                        if (window.mbtiResultModalInstance) {
-                            window.mbtiResultModalInstance.show();
+                        // 전역 함수를 통해 모달 표시
+                        if (typeof window.showMbtiResultModal === 'function') {
+                            window.showMbtiResultModal(
+                                data.mbti_type,
+                                data.mbti_description.title,
+                                data.mbti_description.description
+                            );
+                            console.log("전역 함수로 모달 표시됨");
                         } else {
-                            // 모달 직접 표시
-                            const bsModal = new bootstrap.Modal(mbtiModal);
-                            bsModal.show();
+                            console.error("showMbtiResultModal 함수를 찾을 수 없음");
                         }
                     } catch (err) {
                         console.error("모달 표시 중 오류:", err);
                     }
-                }, 1500);
+                }, 1000);
             }
         })
         .catch(error => {
@@ -291,28 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log("MBTI 평가 완료: ", data.mbti_type);
-        
-        // 모달에 MBTI 결과 업데이트
-        const modalType = document.getElementById('modalMbtiType');
-        const modalTitle = document.getElementById('modalMbtiTitle');
-        const modalDesc = document.getElementById('modalMbtiDescription');
-        
-        if (modalType) modalType.textContent = data.mbti_type;
-        if (modalTitle) modalTitle.textContent = data.mbti_description.title;
-        if (modalDesc) modalDesc.textContent = data.mbti_description.description;
-        
-        // 약간 지연 후 모달 표시
-        setTimeout(() => {
-            // 부트스트랩 5 방식으로 모달 표시
-            const modalElement = document.getElementById('mbtiResultModal');
-            if (modalElement) {
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-                console.log("모달 표시 시도 완료");
-            } else {
-                console.error("모달 엘리먼트를 찾을 수 없음");
-            }
-        }, 1000);
+        // 모달 표시는 sendMessage 함수에서 처리
     }
     
     // Reset chat

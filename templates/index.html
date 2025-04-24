@@ -186,15 +186,38 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
     
-    <!-- 모달 초기화 스크립트 -->
+    <!-- 모달 초기화 및 MBTI 결과 처리 스크립트 -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 모달 미리 초기화
-            const mbtiModal = document.getElementById('mbtiResultModal');
-            if (mbtiModal) {
-                window.mbtiResultModalInstance = new bootstrap.Modal(mbtiModal);
-                console.log('MBTI 결과 모달이 초기화되었습니다.');
-            }
+            // MBTI 결과 처리를 위한 이벤트 리스너 등록
+            window.showMbtiResultModal = function(mbtiType, mbtiTitle, mbtiDesc) {
+                // 모달 내용 설정
+                document.getElementById('modalMbtiType').textContent = mbtiType || 'XXXX';
+                document.getElementById('modalMbtiTitle').textContent = mbtiTitle || '성격 유형';
+                document.getElementById('modalMbtiDescription').textContent = mbtiDesc || '성격 유형 설명이 여기에 표시됩니다.';
+                
+                // Bootstrap 5 모달 표시 (jQuery 없이)
+                const mbtiModal = document.getElementById('mbtiResultModal');
+                const modal = new bootstrap.Modal(mbtiModal);
+                modal.show();
+                console.log('MBTI 결과 모달이 표시되었습니다.');
+            };
+            
+            // 전역 변수에 저장하여 다른 스크립트에서 접근 가능하게 함
+            window.mbtiModal = document.getElementById('mbtiResultModal');
+            console.log('MBTI 모달 초기화 완료');
+            
+            // 테스트 버튼 생성 (개발용)
+            const testBtn = document.createElement('button');
+            testBtn.textContent = '모달 테스트';
+            testBtn.className = 'btn btn-sm btn-outline-secondary position-fixed';
+            testBtn.style.right = '10px';
+            testBtn.style.bottom = '10px';
+            testBtn.style.zIndex = '9999';
+            testBtn.onclick = function() {
+                window.showMbtiResultModal('ENFJ', '정의로운 사회운동가', 'ENFJ 유형은 카리스마가 있고 영감을 주는 지도자 유형입니다.');
+            };
+            document.body.appendChild(testBtn);
         });
     </script>
 </body>
