@@ -1,4 +1,34 @@
-/* Custom Styles for MBTI Chat */
+/* Custom Styles for MBTI Chat - Bright Theme */
+:root {
+    --chat-primary: #FF6B6B;       /* 밝은 산호색 */
+    --chat-secondary: #4ECDC4;     /* 밝은 청록색 */
+    --chat-accent: #FFD166;        /* 밝은 노란색 */
+    --chat-light: #F8F9FA;         /* 밝은 배경색 */
+    --chat-dark: #495057;          /* 어두운 텍스트 색상 */
+    --chat-success: #06D6A0;       /* 밝은 녹색 */
+    --chat-warning: #FF9A76;       /* 밝은 주황색 */
+    --chat-danger: #EF476F;        /* 밝은 분홍색 */
+    --chat-info: #118AB2;          /* 밝은 파란색 */
+}
+
+body {
+    background-color: #FAFAFA;
+}
+
+header {
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 2px solid #f8f9fa;
+}
 
 /* Chat message styling */
 .chat-message {
@@ -17,18 +47,19 @@
 
 .message-content {
     padding: 0.75rem 1rem;
-    border-radius: 1rem;
+    border-radius: 1.2rem;
     display: inline-block;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .user-message .message-content {
-    background-color: var(--bs-primary);
+    background-color: var(--chat-primary);
     color: white;
     border-top-right-radius: 0.2rem;
 }
 
 .assistant-message .message-content {
-    background-color: var(--bs-secondary);
+    background-color: var(--chat-secondary);
     color: white;
     border-top-left-radius: 0.2rem;
 }
@@ -38,6 +69,10 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    background-color: white;
+    border: none !important;
+    border-radius: 1rem;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
 }
 
 /* Ensure messages stack properly */
@@ -52,16 +87,17 @@
     display: inline-flex;
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: var(--bs-secondary);
+    background-color: var(--chat-secondary);
     border-radius: 1rem;
     border-top-left-radius: 0.2rem;
     margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .typing-indicator span {
     width: 8px;
     height: 8px;
-    background-color: #fff;
+    background-color: white;
     border-radius: 50%;
     margin: 0 2px;
     display: inline-block;
@@ -91,15 +127,77 @@
     margin-bottom: 1.5rem;
 }
 
+.dimension-label {
+    font-weight: 500;
+    color: var(--chat-dark);
+}
+
 .progress {
     height: 0.6rem;
     border-radius: 1rem;
-    background-color: var(--bs-dark);
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .progress-bar {
-    background-color: var(--bs-primary);
+    background-color: var(--chat-info);
     transition: width 0.6s ease;
+}
+
+/* Progress bar colors */
+.bg-danger {
+    background-color: var(--chat-danger) !important;
+}
+
+.bg-warning {
+    background-color: var(--chat-warning) !important;
+}
+
+.bg-success {
+    background-color: var(--chat-success) !important;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: var(--chat-primary);
+    border-color: var(--chat-primary);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #ff5252;
+    border-color: #ff5252;
+}
+
+.btn-outline-secondary {
+    color: var(--chat-secondary);
+    border-color: var(--chat-secondary);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--chat-secondary);
+    color: white;
+}
+
+/* Badge styling */
+.badge.bg-secondary {
+    background-color: var(--chat-accent) !important;
+    color: var(--chat-dark);
+}
+
+.badge.bg-success {
+    background-color: var(--chat-success) !important;
+}
+
+/* Input styling */
+.form-control {
+    border: 2px solid #f1f3f5;
+    border-radius: 0.8rem;
+    box-shadow: none;
+}
+
+.form-control:focus {
+    border-color: var(--chat-accent);
+    box-shadow: 0 0 0 0.2rem rgba(255, 209, 102, 0.25);
 }
 
 /* Responsive adjustments */
