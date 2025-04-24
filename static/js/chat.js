@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Where 0 is fully I and 100 is fully E
         const eiPercent = ((eiScore + 1) / 2) * 100;
         eiProgress.style.width = `${eiPercent}%`;
-        eiConfidence.textContent = `${Math.round(eiConfVal)}% 확신도`;
+        eiConfidence.textContent = `${Math.round(eiConfVal)}% confidence`;
         
         // S/N dimension
         const snScore = assessmentState.S_N.score;
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Where 0 is fully S and 100 is fully N
         const snPercent = ((snScore + 1) / 2) * 100;
         snProgress.style.width = `${snPercent}%`;
-        snConfidence.textContent = `${Math.round(snConfVal)}% 확신도`;
+        snConfidence.textContent = `${Math.round(snConfVal)}% confidence`;
         
         // T/F dimension
         const tfScore = assessmentState.T_F.score;
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Where 0 is fully T and 100 is fully F
         const tfPercent = ((tfScore + 1) / 2) * 100;
         tfProgress.style.width = `${tfPercent}%`;
-        tfConfidence.textContent = `${Math.round(tfConfVal)}% 확신도`;
+        tfConfidence.textContent = `${Math.round(tfConfVal)}% confidence`;
         
         // J/P dimension
         const jpScore = assessmentState.J_P.score;
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Where 0 is fully J and 100 is fully P
         const jpPercent = ((jpScore + 1) / 2) * 100;
         jpProgress.style.width = `${jpPercent}%`;
-        jpConfidence.textContent = `${Math.round(jpConfVal)}% 확신도`;
+        jpConfidence.textContent = `${Math.round(jpConfVal)}% confidence`;
         
         // Set colors based on confidence
         setProgressBarColors([
@@ -225,8 +225,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Complete assessment and show results
     function completeAssessment(data) {
         // Update status
-        assessmentStatus.textContent = '완료';
-        assessmentStatus.classList.remove('bg-primary');
+        assessmentStatus.textContent = 'Complete';
+        assessmentStatus.classList.remove('bg-secondary');
         assessmentStatus.classList.add('bg-success');
         
         // Show results section
@@ -273,9 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset UI
         chatMessages.innerHTML = '';
         resultsSection.classList.add('d-none');
-        assessmentStatus.textContent = '진행 중';
+        assessmentStatus.textContent = 'In Progress';
         assessmentStatus.classList.remove('bg-success');
-        assessmentStatus.classList.add('bg-primary');
+        assessmentStatus.classList.add('bg-secondary');
         
         // Reset progress bars
         eiProgress.style.width = '50%';
@@ -283,10 +283,10 @@ document.addEventListener('DOMContentLoaded', function() {
         tfProgress.style.width = '50%';
         jpProgress.style.width = '50%';
         
-        eiConfidence.textContent = '0% 확신도';
-        snConfidence.textContent = '0% 확신도';
-        tfConfidence.textContent = '0% 확신도';
-        jpConfidence.textContent = '0% 확신도';
+        eiConfidence.textContent = '0% confidence';
+        snConfidence.textContent = '0% confidence';
+        tfConfidence.textContent = '0% confidence';
+        jpConfidence.textContent = '0% confidence';
         
         // 메시지 진행도 관련 기능 제거
         
