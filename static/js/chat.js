@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Complete assessment and show results
     function completeAssessment(data) {
         // Update status
-        assessmentStatus.textContent = 'Complete';
+        assessmentStatus.textContent = '완료';
         assessmentStatus.classList.remove('bg-secondary');
         assessmentStatus.classList.add('bg-success');
         
