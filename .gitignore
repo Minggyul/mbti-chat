@@ -54,7 +54,7 @@ Thumbs.db
 logs/
 *.log
 
-# Custom Replit files
+# Custom Replit files 
 .replit
 replit.nix
 .breakpoints
