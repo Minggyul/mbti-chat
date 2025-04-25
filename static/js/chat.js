@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() { 
     // DOM Elements
     const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
