@@ -144,10 +144,15 @@ def init_routes(app):
                 last_focus_dimension
             )
             
-            # 5개 메시지 도달 시 강제 완료
-            if message_count >= min_messages_needed:
+            # 정확히 5개 메시지 도달 시에만 강제 완료
+            if message_count == min_messages_needed:
                 assessment_complete = True
                 logger.debug(f"app.py에서 메시지 개수 {message_count}개로 MBTI 평가 완료 (강제)")
+            else:
+                # 강제로 False로 설정 (5개 미만일 때는 절대 완료되지 않도록)
+                if message_count < min_messages_needed:
+                    assessment_complete = False
+                    logger.debug(f"app.py에서 메시지 개수 {message_count}개로 아직 완료 안됨")
             
             # Update the last focus dimension in session
             session['last_focus_dimension'] = new_focus_dimension

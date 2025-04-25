@@ -162,8 +162,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 progress_percentage: data.progress_percentage
             });
             
+            // Check if assessment is complete - 메시지 카운트가 정확히 5개일 때만 완료 처리
+            // 이중 체크: 서버에서 보낸 assessment_complete와 클라이언트에서 메시지 카운트 확인
+            const isComplete = data.assessment_complete && data.message_count === data.min_messages_needed;
+            console.log("최종 완료 여부:", isComplete, "서버 상태:", data.assessment_complete);
+            
             // Check if assessment is complete
-            if (data.assessment_complete) {
+            if (isComplete) {
                 console.log("MBTI 평가 완료 감지됨:", data.mbti_type);
                 completeAssessment(data);
                 

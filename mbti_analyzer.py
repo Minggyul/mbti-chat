@@ -15,7 +15,7 @@ class MBTIAnalyzer:
         self.model = "gpt-4o"
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.client = OpenAI(api_key=self.openai_api_key)
-        self.confidence_threshold = 0.8  # Threshold to determine when assessment is complete - higher value requires longer conversations
+        self.confidence_threshold = 0.95  # 의도적으로 높게 설정하여 min_messages_needed 조건으로만 완료되도록 함
 
     def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=5, last_focus_dimension=None):
         """
