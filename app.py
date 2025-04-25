@@ -130,15 +130,24 @@ def init_routes(app):
             min_messages_needed = session.get('min_messages_needed', 5)  # 10개에서 5개로 변경
             last_focus_dimension = session.get('last_focus_dimension', None)
             
+            # 메시지 카운트가 정확히 5개일 때 강제로 평가 완료하도록 설정
+            # 이는 mbti_analyzer와 별개로 app.py에서도 처리
+            force_complete = message_count >= min_messages_needed
+            
             response, updated_assessment_state, assessment_complete, new_focus_dimension = mbti_analyzer.process_message(
                 user_message, 
                 conversation,
                 assessment_state,
-                assessment_complete,
+                assessment_complete or force_complete,  # 여기서 자체적으로 완료 조건 추가
                 message_count,
                 min_messages_needed,
                 last_focus_dimension
             )
+            
+            # 5개 메시지 도달 시 강제 완료
+            if message_count >= min_messages_needed:
+                assessment_complete = True
+                logger.debug(f"app.py에서 메시지 개수 {message_count}개로 MBTI 평가 완료 (강제)")
             
             # Update the last focus dimension in session
             session['last_focus_dimension'] = new_focus_dimension
