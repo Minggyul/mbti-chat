@@ -122,17 +122,26 @@ def init_routes(app):
             db.session.add(user_message_record)
             db.session.commit()
             
-            # Update message count
-            message_count = session.get('message_count', 0) + 1
+            # 대화 기록에서 사용자 메시지만 카운트하여 정확한 카운트 유지
+            # 사용자 메시지 개수를 DB에서 직접 가져오기
+            user_message_count = Message.query.filter_by(
+                conversation_id=conversation_id, 
+                role="user"
+            ).count()
+            
+            # 방금 추가한 메시지도 포함
+            message_count = user_message_count
             session['message_count'] = message_count
             
+            logger.debug(f"💬 사용자 메시지 수: {message_count}개 (DB 기준)")
+            
             # Process message through MBTI analyzer
-            min_messages_needed = session.get('min_messages_needed', 5)  # 10개에서 5개로 변경
+            min_messages_needed = 5  # 항상 5개로 고정
+            session['min_messages_needed'] = min_messages_needed
             last_focus_dimension = session.get('last_focus_dimension', None)
             
-            # 메시지 카운트가 정확히 5개일 때 강제로 평가 완료하도록 설정
-            # 이는 mbti_analyzer와 별개로 app.py에서도 처리
-            force_complete = message_count >= min_messages_needed
+            # 평가 진행 중인지 여부 확인 (정확히 5번째 메시지인 경우에만 완료)
+            force_complete = message_count == min_messages_needed
             
             response, updated_assessment_state, assessment_complete, new_focus_dimension = mbti_analyzer.process_message(
                 user_message, 
