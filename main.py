@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-# 로깅 설정
+# 로깅 설정 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
