@@ -3,7 +3,7 @@ import json
 import uuid
 from datetime import datetime
 from flask import render_template, request, jsonify, session
-from mbti_analyzer import MBTIAnalyzer
+from mbti_analyzer import MBTIAnalyzer 
 from main import db
 from models import Conversation, Message, QuestionLog
 
