@@ -3,7 +3,7 @@ import json
 import logging
 from openai import OpenAI
 
-# Configure logging
+# Configure logging 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
