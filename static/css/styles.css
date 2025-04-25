@@ -1,5 +1,5 @@
 /* Custom Styles for MBTI Chat - Simple Theme */
-:root {
+:root { 
     --chat-primary: #4361EE;       /* 파란색 메인 컬러 - 사용자 메시지 */
     --chat-secondary: #3A0CA3;     /* 짙은 파란색 - AI 메시지 */
     --chat-accent: #4895EF;        /* 밝은 파란색 포인트 */
