@@ -1,7 +1,7 @@
 # MBTI Chat
 
 A conversational MBTI personality assessment app that analyzes your personality type through natural conversation.
-
+<img src="(https://github.com/user-attachments/assets/b925009e-1eec-40ab-9754-3210fb9eebb7)">
 ## Overview
 
 MBTI Chat is an innovative application that uses natural language processing to determine a user's Myers-Briggs Type Indicator (MBTI) personality type through casual conversation. Unlike traditional MBTI assessments that use explicit multiple-choice questions, this app engages users in a natural dialogue and analyzes their responses to identify personality traits.
