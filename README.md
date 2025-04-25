@@ -48,9 +48,6 @@ MBTI Chat is an innovative application that uses natural language processing to 
    - `SESSION_SECRET`: Secret key for Flask session
 4. Run the application: `python main.py`
 
-## License
-
-MIT License
 
 ## Acknowledgments
 
