@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from main import db
 
 class Conversation(db.Model):
-    """대화 세션 정보를 저장하는 모델"""
+    """대화 세션 정보를 저장하는 모델""" 
     __tablename__ = "conversations"
     
     id: Mapped[int] = mapped_column(primary_key=True)
