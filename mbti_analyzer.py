@@ -15,7 +15,7 @@ class MBTIAnalyzer:
         self.model = "gpt-4o"
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
         self.client = OpenAI(api_key=self.openai_api_key)
-        self.confidence_threshold = 0.95  # 의도적으로 높게 설정하여 min_messages_needed 조건으로만 완료되도록 함
+        self.confidence_threshold = 0.7  # 첫 메시지에서 확신도가 0.7보다 높아질 수 없도록 설정됨
 
     def process_message(self, user_message, conversation, assessment_state, assessment_complete, message_count=0, min_messages_needed=5, last_focus_dimension=None):
         """
@@ -160,9 +160,9 @@ class MBTIAnalyzer:
                         (new['score'] * new['confidence'])
                     ) / total_confidence
                     
-                    # Increase confidence, but at a slower rate and don't exceed 0.95
-                    # Use a smaller factor (0.6 instead of 0.8) and cap at 0.95 to always allow for more questions
-                    new_confidence = min(current['confidence'] + (new['confidence'] * 0.3), 0.95)
+                    # 신뢰도를 매우 낮은 비율로 증가시킴
+                    # 메시지 5개 안에서는 신뢰도가 크게 높아지지 않도록 0.05의 매우 낮은 증가율 사용
+                    new_confidence = min(current['confidence'] + 0.05, 0.7)  # 0.05씩만 증가, 최대 0.7
                     
                     updated_assessment[dimension] = {
                         'score': weighted_score,

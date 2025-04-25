@@ -165,7 +165,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if assessment is complete - 메시지 카운트가 정확히 5개일 때만 완료 처리
             // 이중 체크: 서버에서 보낸 assessment_complete와 클라이언트에서 메시지 카운트 확인
             const isComplete = data.assessment_complete && data.message_count === data.min_messages_needed;
-            console.log("최종 완료 여부:", isComplete, "서버 상태:", data.assessment_complete);
+            console.log("📊 메시지 상태:", {
+                메시지수: data.message_count,
+                필요수: data.min_messages_needed,
+                서버완료상태: data.assessment_complete,
+                최종완료여부: isComplete
+            });
             
             // Check if assessment is complete
             if (isComplete) {
